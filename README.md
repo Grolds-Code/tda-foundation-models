@@ -151,7 +151,7 @@ If you use this code or findings, please cite:
 ## Author
 
 **Grold Otieno Mboya**  
-MSc Epidemiology & Biostatistics, JOOUST, Kenya  
+Research Fellow-Fatima Institute  
 Technical AI Safety Researcher | Co-Founder, NIXQUE LTD  
 [groldotieno97@gmail.com](mailto:groldotieno97@gmail.com) · [nixque.com](https://nixque.com) · [GitHub](https://github.com/Grolds-Code)
 
