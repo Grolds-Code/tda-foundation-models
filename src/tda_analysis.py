@@ -60,13 +60,21 @@ C_OOD = "#C03B26"
 C_H0  = "#3778C2"
 C_H1  = "#E8A838"
 
-# ── Configuration ─────────────────────────────────────────────────────────────
+# ── Output Directory Structure ────────────────────────────────────────────────
 DATA_DIR   = "data"
 OUTPUT_DIR = "outputs"
-LAYERS     = [2, 4, 6]
-MAX_DIM    = 1
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+DIRS = {
+    "persistence": os.path.join(OUTPUT_DIR, "persistence_diagrams"),
+    "umap":        os.path.join(OUTPUT_DIR, "umap"),
+    "summary":     os.path.join(OUTPUT_DIR, "summary"),
+}
+
+for d in DIRS.values():
+    os.makedirs(d, exist_ok=True)
+
+LAYERS  = [2, 4, 6]
+MAX_DIM = 1
 
 # ── Load Activations ──────────────────────────────────────────────────────────
 def load_activations(layer):
@@ -100,9 +108,10 @@ def compute_persistence(activations, label, layer):
 
 # ── Bottleneck Distance ───────────────────────────────────────────────────────
 def compute_bottleneck_distance(s_in, s_ood):
-    d_h0 = bottleneck(s_in["diagrams"][0], s_ood["diagrams"][0])
-    h1_in, h1_ood = s_in["diagrams"][1], s_ood["diagrams"][1]
-    d_h1 = bottleneck(h1_in, h1_ood) if (len(h1_in) > 0 and len(h1_ood) > 0) else 0.0
+    d_h0    = bottleneck(s_in["diagrams"][0], s_ood["diagrams"][0])
+    h1_in   = s_in["diagrams"][1]
+    h1_ood  = s_ood["diagrams"][1]
+    d_h1    = bottleneck(h1_in, h1_ood) if (len(h1_in) > 0 and len(h1_ood) > 0) else 0.0
     return {"h0": d_h0, "h1": d_h1}
 
 # ── Persistence Diagram Plot ──────────────────────────────────────────────────
@@ -112,9 +121,9 @@ def plot_persistence_comparison(s_in, s_ood, layer):
     for ax, stats, title in zip(axes,
                                  [s_in, s_ood],
                                  ["In-distribution", "OOD (shuffled)"]):
-        dgms = stats["diagrams"]
-        h0   = dgms[0]
-        h1   = dgms[1] if len(dgms) > 1 else np.array([]).reshape(0, 2)
+        dgms   = stats["diagrams"]
+        h0     = dgms[0]
+        h1     = dgms[1] if len(dgms) > 1 else np.array([]).reshape(0, 2)
         h0_fin = h0[h0[:, 1] != np.inf]
 
         all_finite = []
@@ -153,11 +162,11 @@ def plot_persistence_comparison(s_in, s_ood, layer):
 
     fig.suptitle("Persistence diagrams: ESM-2 latent representations", fontsize=9, y=1.01)
     plt.tight_layout(w_pad=2.0)
-    base = os.path.join(OUTPUT_DIR, f"persistence_layer{layer}")
-    plt.savefig(base + ".pdf")
+
+    base = os.path.join(DIRS["persistence"], f"persistence_layer{layer}")
     plt.savefig(base + ".png")
     plt.close()
-    print(f"  Saved persistence diagram → {base}.png")
+    print(f"  Saved → outputs/persistence_diagrams/persistence_layer{layer}.png")
 
 # ── UMAP Visualization ────────────────────────────────────────────────────────
 def plot_umap(in_act, ood_act, layer):
@@ -168,9 +177,8 @@ def plot_umap(in_act, ood_act, layer):
                           n_neighbors=5).fit_transform(combined)
 
     fig, ax = plt.subplots(figsize=(3.5, 3.0))
-    specs = [("In-distribution", C_IN,  "o"),
-             ("OOD (shuffled)",  C_OOD, "s")]
-    for lbl, color, marker in specs:
+    for lbl, color, marker in [("In-distribution", C_IN,  "o"),
+                                ("OOD (shuffled)",  C_OOD, "s")]:
         mask = labels == lbl
         ax.scatter(embedding[mask, 0], embedding[mask, 1],
                    c=color, s=18, label=lbl, marker=marker,
@@ -181,11 +189,11 @@ def plot_umap(in_act, ood_act, layer):
     ax.set_ylabel("UMAP 2", fontsize=7)
     ax.legend(loc="best")
     plt.tight_layout()
-    base = os.path.join(OUTPUT_DIR, f"umap_layer{layer}")
-    plt.savefig(base + ".pdf")
+
+    base = os.path.join(DIRS["umap"], f"umap_layer{layer}")
     plt.savefig(base + ".png")
     plt.close()
-    print(f"  Saved UMAP plot → {base}.png")
+    print(f"  Saved → outputs/umap/umap_layer{layer}.png")
 
 # ── Summary Bar Chart ─────────────────────────────────────────────────────────
 def plot_summary(all_results):
@@ -219,11 +227,11 @@ def plot_summary(all_results):
     ax.legend(fontsize=7)
     ax.set_ylim(0, max(d_h0 + [0.1]) * 1.22)
     plt.tight_layout()
-    base = os.path.join(OUTPUT_DIR, "bottleneck_summary")
-    plt.savefig(base + ".pdf")
+
+    base = os.path.join(DIRS["summary"], "bottleneck_summary")
     plt.savefig(base + ".png")
     plt.close()
-    print(f"\n  Saved summary chart → {base}.png")
+    print(f"\n  Saved → outputs/summary/bottleneck_summary.png")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
@@ -271,5 +279,8 @@ if __name__ == "__main__":
         print(f"  {r['layer']:<6} {r['in_h0_pers']:>10.4f} {r['ood_h0_pers']:>10.4f} "
               f"{r['bottleneck_h0']:>10.4f} {r['bottleneck_h1']:>10.4f}")
 
-    print(f"\n✓ All outputs saved to: {OUTPUT_DIR}/")
-    print("  Formats: .pdf (submission) and .png (preview)")
+    print(f"\n✓ All outputs saved to:")
+    print(f"  outputs/persistence_diagrams/   — persistence diagram pairs per layer")
+    print(f"  outputs/umap/                   — UMAP projections per layer")
+    print(f"  outputs/summary/                — bottleneck distance summary chart")
+    print(f"\n  Each figure saved as .pdf (for submission) and .png (for preview)")
