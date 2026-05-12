@@ -259,7 +259,7 @@ If you use this code, methodology, or findings, please cite:
 **Grold Otieno Mboya**  
 Department of Epidemiology and Biostatistics  
 Jaramogi Oginga Odinga University of Science and Technology, Kenya  
-[groldotieno97@gmail.com](mailto:groldotieno97@gmail.com) · [nixque.com](https://nixque.com)
+[gmotieno@jooust.ac.ke](mailto:gmotieno@jooust.ac.ke) | [groldotieno97@gmail.com](mailto:groldotieno97@gmail.com) · [nixque.com](https://nixque.com)
 
 Research interests: mechanistic interpretability, topological data analysis, causal invariant learning, foundation model evaluation, AI for science.
 
